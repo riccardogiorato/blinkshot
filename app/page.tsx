@@ -98,8 +98,8 @@ export default function Home() {
   }, [userAPIKey]);
 
 
-  let activeImage =
-    activeIndex !== undefined ? generations[activeIndex].image : undefined;
+  const activeGeneration =
+    activeIndex !== undefined ? generations[activeIndex] : undefined;
 
   return (
     <div className="flex h-full flex-col">
@@ -204,7 +204,7 @@ export default function Home() {
         </div>
 
         <div className="flex w-full grow flex-col items-center justify-center pb-8 pt-4 text-center">
-          {!activeImage || !prompt ? (
+          {!activeGeneration || !prompt ? (
             <div className="max-w-xl md:max-w-4xl lg:max-w-3xl">
               <p className="text-xl font-semibold text-gray-200 md:text-3xl lg:text-4xl">
                 Generate images in real-time
@@ -216,16 +216,33 @@ export default function Home() {
             </div>
           ) : (
             <div className="mt-4 flex w-full max-w-4xl flex-col justify-center">
-              <div>
+              <div className="relative">
                 <Image
                   placeholder="blur"
                   blurDataURL={imagePlaceholder.blurDataURL}
                   width={1024}
                   height={768}
-                  src={`data:image/png;base64,${activeImage.b64_json}`}
+                  src={`data:image/png;base64,${activeGeneration.image.b64_json}`}
                   alt=""
                   className={`${isFetching ? "animate-pulse" : ""} max-w-full rounded-lg object-cover shadow-sm shadow-black`}
                 />
+                <button
+                  onClick={() => {
+                    const link = document.createElement('a');
+                    link.href = `data:image/png;base64,${activeGeneration.image.b64_json}`;
+                    link.download = `blinkshot-${activeGeneration.prompt.replace(/\s+/g, "-").toLowerCase()}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                  className="absolute right-2 top-2 bg-white/30 backdrop-blur-sm backdrop-filter-blur-2px border-2 border-transparent border-solid rounded-lg p-2 transition hover:bg-white/50 focus:outline-none"
+                  title="Download image"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C8.16321 0 8.31974 0.0648349 8.43514 0.180242C8.55055 0.295649 8.61539 0.452174 8.61539 0.615385V10.2072L11.2574 7.56513C11.3138 7.50467 11.3817 7.45617 11.4572 7.42254C11.5327 7.3889 11.6142 7.37082 11.6968 7.36936C11.7794 7.3679 11.8615 7.3831 11.9381 7.41405C12.0148 7.445 12.0844 7.49107 12.1428 7.54951C12.2012 7.60794 12.2473 7.67755 12.2783 7.75418C12.3092 7.8308 12.3244 7.91288 12.3229 7.99551C12.3215 8.07813 12.3034 8.15962 12.2698 8.23511C12.2361 8.31059 12.1876 8.37853 12.1272 8.43487L8.43487 12.1272C8.31949 12.2424 8.16308 12.3072 8 12.3072C7.83692 12.3072 7.68051 12.2424 7.56513 12.1272L3.87282 8.43487C3.81236 8.37853 3.76387 8.31059 3.73023 8.23511C3.6966 8.15962 3.67851 8.07813 3.67705 7.99551C3.6756 7.91288 3.69079 7.8308 3.72175 7.75418C3.7527 7.67755 3.79876 7.60794 3.8572 7.54951C3.91564 7.49107 3.98524 7.445 4.06187 7.41405C4.13849 7.3831 4.22057 7.3679 4.3032 7.36936C4.38583 7.37082 4.46731 7.3889 4.5428 7.42254C4.61829 7.45617 4.68623 7.50467 4.74256 7.56513L7.38462 10.2072V0.615385C7.38462 0.452174 7.44945 0.295649 7.56486 0.180242C7.68026 0.0648349 7.83679 0 8 0ZM0.615385 11.0769C0.778595 11.0769 0.93512 11.1418 1.05053 11.2572C1.16593 11.3726 1.23077 11.5291 1.23077 11.6923V13.5385C1.23077 13.8649 1.36044 14.1779 1.59125 14.4087C1.82207 14.6396 2.13512 14.7692 2.46154 14.7692H13.5385C13.8649 14.7692 14.1779 14.6396 14.4087 14.4087C14.6396 14.1779 14.7692 13.8649 14.7692 13.5385V11.6923C14.7692 11.5291 14.8341 11.3726 14.9495 11.2572C15.0649 11.1418 15.2214 11.0769 15.3846 11.0769C15.5478 11.0769 15.7044 11.1418 15.8198 11.2572C15.9352 11.3726 16 11.5291 16 11.6923V13.5385C16 14.1913 15.7407 14.8174 15.279 15.279C14.8174 15.7407 14.1913 16 13.5385 16H2.46154C1.8087 16 1.1826 15.7407 0.720968 15.279C0.25934 14.8174 0 14.1913 0 13.5385V11.6923C0 11.5291 0.0648349 11.3726 0.180242 11.2572C0.295649 11.1418 0.452174 11.0769 0.615385 11.0769Z" fill="black"/>
+</svg>
+
+                </button>
               </div>
 
               <div className="mt-4 flex flex-row-reverse gap-4 overflow-x-scroll pb-4">
