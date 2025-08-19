@@ -15,10 +15,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { IMAGE_PROMPTS, IMAGE_STYLES } from "@/lib/config";
 import imagePlaceholder from "@/public/image-placeholder.png";
+import { Banner } from "@/components/layout/banner";
+import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
 
 
 import * as RadioGroup from "@radix-ui/react-radio-group";
@@ -101,46 +103,9 @@ export default function Home() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="bg-gray-200 p-2 text-center text-black">
-        <p className="text-balance">
-          Check out{" "}
-          <a
-            href="https://chat.together.ai"
-            className="font-semibold underline"
-            target="_blank"
-          >
-            Together Chat
-          </a>{" "}
-          to use DeepSeek R1 for free
-        </p>
-      </div>
+      <Banner />
       <div className="relative mt-3 flex h-full flex-col px-5">
-        <header className="flex justify-center pt-20 md:justify-end md:pt-3">
-          <div className="absolute left-1/2 top-6 -translate-x-1/2">
-            <a href="https://togetherai.link" target="_blank">
-              <Logo />
-            </a>
-          </div>
-          <div>
-            <label className="text-xs text-gray-200">
-              [Optional] Add your{" "}
-              <a
-                href="https://api.together.xyz/settings/api-keys"
-                target="_blank"
-                className="underline underline-offset-4 transition hover:text-blue-500"
-              >
-                Together API Key
-              </a>{" "}
-            </label>
-            <Input
-              placeholder="API Key"
-              type="password"
-              value={userAPIKey}
-              className="mt-1 bg-gray-400 text-gray-200 placeholder:text-gray-300"
-              onChange={(e) => setUserAPIKey(e.target.value)}
-            />
-          </div>
-        </header>
+        <Header userAPIKey={userAPIKey} onAPIKeyChange={setUserAPIKey} />
 
         <div className="flex justify-center">
           <form className="mt-10 w-full max-w-lg">
@@ -263,7 +228,7 @@ export default function Home() {
                 />
               </div>
 
-              <div className="mt-4 flex gap-4 overflow-x-scroll pb-4">
+              <div className="mt-4 flex flex-row-reverse gap-4 overflow-x-scroll pb-4">
                 {generations.map((generatedImage, i) => (
                   <button
                     key={i}
@@ -286,62 +251,7 @@ export default function Home() {
           )}
         </div>
 
-        <footer className="mt-16 w-full items-center pb-10 text-center text-gray-300 md:mt-4 md:flex md:justify-between md:pb-5 md:text-xs lg:text-sm">
-          <p>
-            Powered by{" "}
-            <a
-              href="https://togetherai.link"
-              target="_blank"
-              className="underline underline-offset-4 transition hover:text-blue-500"
-            >
-              Together.ai
-            </a>{" "}
-            &{" "}
-            <a
-              href="https://togetherai.link/together-flux"
-              target="_blank"
-              className="underline underline-offset-4 transition hover:text-blue-500"
-            >
-              Flux
-            </a>
-          </p>
-
-          <div className="mt-8 flex items-center justify-center md:mt-0 md:justify-between md:gap-6">
-            <p className="hidden whitespace-nowrap md:block">
-              100% free and{" "}
-              <a
-                href="https://github.com/Nutlope/blinkshot"
-                target="_blank"
-                className="underline underline-offset-4 transition hover:text-blue-500"
-              >
-                open source
-              </a>
-            </p>
-
-            <div className="flex gap-6 md:gap-2">
-              <a href="https://github.com/Nutlope/blinkshot" target="_blank">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="inline-flex items-center gap-2"
-                >
-                  <GithubIcon className="size-4" />
-                  GitHub
-                </Button>
-              </a>
-              <a href="https://x.com/nutlope" target="_blank">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="inline-flex items-center gap-2"
-                >
-                  <XIcon className="size-3" />
-                  Twitter
-                </Button>
-              </a>
-            </div>
-          </div>
-        </footer>
+        <Footer />
       </div>
     </div>
   );
