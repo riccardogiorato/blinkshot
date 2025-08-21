@@ -298,7 +298,7 @@ export default function Home() {
                           <div key={s.sessionId} className="group relative">
                             <a
                               href={`/?session=${s.sessionId}`}
-                              className="block overflow-hidden rounded-md border border-gray-400/40 hover:border-white"
+                              className="block overflow-hidden rounded-md"
                               title={lastGen?.prompt || "Open session"}
                             >
                               <Image
@@ -311,6 +311,7 @@ export default function Home() {
                                 className="h-32 w-full rounded object-cover"
                               />
                             </a>
+                            <div className="pointer-events-none absolute inset-0 rounded-md bg-black/30 transition group-hover:bg-black/50" />
                             <div className="pointer-events-none absolute inset-0 hidden items-end justify-between bg-gradient-to-t from-black/70 to-transparent p-2 text-left text-xs text-white group-hover:flex">
                               <div className="pr-6">
                                 <p className="line-clamp-2 font-semibold">
