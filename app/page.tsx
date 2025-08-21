@@ -63,15 +63,17 @@ export default function Home() {
   );
 
   const isQueryEnabled = !!debouncedPrompt.trim() && !isRestoring;
-  const { data: image, isFetching } = useQuery({
+  const { data: image, isFetching } = useQuery<ImageResponse | null>({
     placeholderData: (previousData) => previousData,
     queryKey: [debouncedPrompt + selectedStyleValue],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
+      if (!prompt.trim()) return null;
       let res = await fetch("/api/generateImages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        signal,
         body: JSON.stringify({
           prompt,
           style: IMAGE_PROMPTS[selectedStyleValue],
@@ -99,7 +101,7 @@ export default function Home() {
     if (!prompt.trim()) return;
     const last = generations[generations.length - 1];
     const isDuplicate =
-      last && last.image && last.image.b64_json === image.b64_json;
+      last && last.image && image && last.image.b64_json === image.b64_json;
     if (isDuplicate) return;
     const newIndex = generations.length;
     addGeneration({ prompt, image }, prompt);
@@ -165,13 +167,13 @@ export default function Home() {
             <fieldset>
               <div className="relative">
                 <Textarea
-                  rows={4}
+                  rows={2}
                   spellCheck={false}
                   placeholder="Describe your image..."
                   required
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  className="w-full resize-none border-gray-300 border-opacity-50 bg-gray-400 px-4 text-base placeholder-gray-300"
+                  className="w-full resize-none border-gray-300 border-opacity-50 bg-gray-400 px-4 text-sm placeholder-gray-300"
                 />
                 <div
                   className={`${isFetching || isDebouncing ? "flex" : "hidden"} absolute bottom-3 right-3 items-center justify-center`}
@@ -256,7 +258,7 @@ export default function Home() {
           </form>
         </div>
 
-        <div className="flex w-full grow flex-col items-center justify-center pb-8 pt-4 text-center">
+        <div className="flex w-full grow flex-col items-center justify-center pb-8 pt-8 text-center">
           {!activeGeneration ? (
             <div className="max-w-xl md:max-w-4xl lg:max-w-3xl">
               <p className="text-xl font-semibold text-gray-200 md:text-3xl lg:text-4xl">
