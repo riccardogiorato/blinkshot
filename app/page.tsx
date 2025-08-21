@@ -1,12 +1,8 @@
 "use client";
 
 import CheckIcon from "@/components/icons/check-icon";
-import GithubIcon from "@/components/icons/github-icon";
 import PictureIcon from "@/components/icons/picture-icon";
-import XIcon from "@/components/icons/x-icon";
-import Logo from "@/components/logo";
 import Spinner from "@/components/spinner";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -64,7 +60,9 @@ export default function Home() {
     return "";
   });
   const [selectedStyleValue, setSelectedStyleValue] = useState("");
-  const debouncedPrompt = useDebounce(prompt, 350);
+  const wordCount = prompt.trim() ? prompt.trim().split(/\s+/).length : 0;
+  const debounceDelay = wordCount <= 2 ? 900 : wordCount <= 5 ? 600 : 350;
+  const debouncedPrompt = useDebounce(prompt, debounceDelay);
   const {
     sessions,
     currentSession,
