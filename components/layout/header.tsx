@@ -8,7 +8,7 @@ type HeaderProps = {
 
 export function Header({ userAPIKey, onAPIKeyChange }: HeaderProps) {
   return (
-    <header className="flex justify-center pt-20 md:justify-end md:pt-3">
+    <header className="flex justify-center pt-4 md:justify-end">
       <div className="absolute left-1/2 top-6 -translate-x-1/2">
         <Logo />
       </div>

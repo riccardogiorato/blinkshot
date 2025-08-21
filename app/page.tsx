@@ -157,11 +157,11 @@ export default function Home() {
   return (
     <div className="flex h-full flex-col">
       <Banner />
-      <div className="relative mt-3 flex h-full flex-col px-5">
+      <div className="relative flex h-full flex-col px-5">
         <Header userAPIKey={userAPIKey} onAPIKeyChange={setUserAPIKey} />
 
         <div className="flex justify-center">
-          <form className="mt-10 w-full max-w-lg">
+          <form className="mt-5 w-full max-w-lg">
             <fieldset>
               <div className="relative">
                 <Textarea
@@ -363,7 +363,7 @@ export default function Home() {
                   .map(({ gen, idx }) => (
                     <button
                       key={idx}
-                      className="w-32 shrink-0 opacity-50 hover:opacity-100"
+                      className={`w-32 shrink-0 ${activeIndex === idx ? "opacity-100" : "opacity-50 hover:opacity-100"}`}
                       onClick={() => setActiveIndex(idx)}
                     >
                       <Image
