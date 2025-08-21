@@ -36,6 +36,8 @@ type ImageResponse = {
 
 export default function Home() {
   const [prompt, setPrompt] = useState("");
+  const [restoredPrompt, setRestoredPrompt] = useState<string | null>(null);
+  const [isRestoring, setIsRestoring] = useState(false);
   const [iterativeMode, setIterativeMode] = useState(false);
   const [userAPIKey, setUserAPIKey] = useState(() => {
     // Only run in browser
@@ -77,7 +79,7 @@ export default function Home() {
       }
       return (await res.json()) as ImageResponse;
     },
-    enabled: !!debouncedPrompt.trim(),
+    enabled: !!debouncedPrompt.trim() && !isRestoring,
     staleTime: Infinity,
     retry: false,
   });
@@ -122,16 +124,31 @@ export default function Home() {
     });
     if (!currentSession) {
       setActiveIndex(undefined);
+      setRestoredPrompt(null);
+      setIsRestoring(false);
       return;
     }
     if (generations.length > 0) {
       setActiveIndex(generations.length - 1);
       console.log("[page] setActiveIndex(last)", generations.length - 1);
+      const lastPrompt = generations[generations.length - 1]?.prompt ?? "";
+      setPrompt(lastPrompt);
+      setRestoredPrompt(lastPrompt);
+      setIsRestoring(true);
     } else {
       setActiveIndex(undefined);
+      setRestoredPrompt(null);
+      setIsRestoring(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSessionId, generations.length]);
+
+  // When the user edits the prompt away from the restored value, enable querying
+  useEffect(() => {
+    if (restoredPrompt !== null && prompt !== restoredPrompt) {
+      setIsRestoring(false);
+    }
+  }, [prompt, restoredPrompt]);
 
   useEffect(() => {
     if (userAPIKey) {
