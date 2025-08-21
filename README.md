@@ -9,8 +9,8 @@
 
 ## Tech stack
 
-- [Flux Schnell](https://togetherai.link/together-flux/?utm_source=blinkshot&utm_medium=referral&utm_campaign=readme) from BFL for the image model
-- [Together AI](https://togetherai.link/?utm_source=blinkshot&utm_medium=referral&utm_campaign=readme) for inference
+- [Flux Schnell](https://togetherai.link/together-flux/?utm_source=blinkshot&utm_medium=referral&utm_campaign=example-app) from BFL for the image model
+- [Together AI](https://togetherai.link/?utm_source=blinkshot&utm_medium=referral&utm_campaign=example-app) for inference
 - Next.js app router with Tailwind
 - Helicone for observability
 - Plausible for website analytics

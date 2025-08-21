@@ -8,7 +8,7 @@ export function Footer() {
       <p>
         Powered by{" "}
         <a
-          href="https://togetherai.link/?utm_source=blinkshot&utm_medium=referral&utm_campaign=footer"
+          href="https://togetherai.link/?utm_source=blinkshot&utm_medium=referral&utm_campaign=example-app"
           target="_blank"
           className="underline underline-offset-4 transition hover:text-blue-500"
         >
@@ -16,7 +16,7 @@ export function Footer() {
         </a>{" "}
         &{" "}
         <a
-          href="https://togetherai.link/together-flux/?utm_source=blinkshot&utm_medium=referral&utm_campaign=footer"
+          href="https://togetherai.link/together-flux/?utm_source=blinkshot&utm_medium=referral&utm_campaign=example-app"
           target="_blank"
           className="underline underline-offset-4 transition hover:text-blue-500"
         >
