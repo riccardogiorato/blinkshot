@@ -57,6 +57,7 @@ export default function Home() {
     (s) => s.value === selectedStyleValue,
   );
 
+  const isQueryEnabled = !!debouncedPrompt.trim() && !isRestoring;
   const { data: image, isFetching } = useQuery({
     placeholderData: (previousData) => previousData,
     queryKey: [debouncedPrompt + selectedStyleValue],
@@ -79,7 +80,7 @@ export default function Home() {
       }
       return (await res.json()) as ImageResponse;
     },
-    enabled: !!debouncedPrompt.trim() && !isRestoring,
+    enabled: isQueryEnabled,
     staleTime: Infinity,
     retry: false,
   });
@@ -101,19 +102,29 @@ export default function Home() {
       hasImage: !!image,
       generations: generations.length,
       prompt,
+      isRestoring,
+      isQueryEnabled,
     });
-    if (image) {
-      const last = generations[generations.length - 1];
-      const isDuplicate =
-        last && last.image && last.image.b64_json === image.b64_json;
-      if (!isDuplicate) {
-        const newIndex = generations.length;
-        addGeneration({ prompt, image }, prompt);
-        setActiveIndex(newIndex);
-        console.log("[page] addGeneration + setActiveIndex", newIndex);
-      }
-    }
-  }, [generations.length, image, prompt, addGeneration]);
+    if (!image) return;
+    if (!isQueryEnabled) return; // ignore placeholder/cached data when disabled
+    if (isRestoring) return;
+    if (!prompt.trim()) return;
+    const last = generations[generations.length - 1];
+    const isDuplicate =
+      last && last.image && last.image.b64_json === image.b64_json;
+    if (isDuplicate) return;
+    const newIndex = generations.length;
+    addGeneration({ prompt, image }, prompt);
+    setActiveIndex(newIndex);
+    console.log("[page] addGeneration + setActiveIndex", newIndex);
+  }, [
+    generations.length,
+    image,
+    prompt,
+    addGeneration,
+    isRestoring,
+    isQueryEnabled,
+  ]);
 
   // Ensure an image is shown on refresh or when switching sessions
   useEffect(() => {
@@ -124,6 +135,7 @@ export default function Home() {
     });
     if (!currentSession) {
       setActiveIndex(undefined);
+      setPrompt("");
       setRestoredPrompt(null);
       setIsRestoring(false);
       return;
