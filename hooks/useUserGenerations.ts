@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 export type Generation = {
   prompt: string;
   image: ImageResponse;
+  createdAt?: number;
 };
 
 type Session = {
@@ -118,9 +119,13 @@ const useUserGenerations = () => {
   // Adds a generation to the current session; creates a session if none in URL
   const addGeneration = (generation: Generation, prompt: string) => {
     const sessionId = ensureSessionId();
+    const generationWithTimestamp: Generation = {
+      ...generation,
+      createdAt: generation.createdAt ?? Date.now(),
+    };
     upsertSession(sessionId, (session) => ({
       ...session,
-      generations: [...session.generations, generation],
+      generations: [...session.generations, generationWithTimestamp],
     }));
   };
 

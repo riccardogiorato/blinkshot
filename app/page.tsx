@@ -34,6 +34,23 @@ type ImageResponse = {
   timings: { inference: number };
 };
 
+function timeAgo(timestampMs: number): string {
+  const seconds = Math.floor((Date.now() - timestampMs) / 1000);
+  const intervals: [number, string][] = [
+    [60 * 60 * 24 * 365, "y"],
+    [60 * 60 * 24 * 30, "mo"],
+    [60 * 60 * 24, "d"],
+    [60 * 60, "h"],
+    [60, "m"],
+    [1, "s"],
+  ];
+  for (const [secs, label] of intervals) {
+    const count = Math.floor(seconds / secs);
+    if (count >= 1) return `${count}${label} ago`;
+  }
+  return "just now";
+}
+
 export default function Home() {
   const [prompt, setPrompt] = useState("");
   const [restoredPrompt, setRestoredPrompt] = useState<string | null>(null);
@@ -181,23 +198,7 @@ export default function Home() {
                   <Spinner className="size-4" />
                 </div>
               </div>
-              <div className="mt-3 flex items-center justify-end gap-1.5 text-sm md:text-right">
-                <div>
-                  <label
-                    title="Use earlier images as references"
-                    className="inline-flex cursor-pointer items-center gap-2 rounded border-[0.5px] border-gray-350 bg-gray-500 px-2 py-1.5 shadow shadow-black"
-                  >
-                    <input
-                      type="checkbox"
-                      className="accent-white"
-                      checked={iterativeMode}
-                      onChange={() => {
-                        setIterativeMode(!iterativeMode);
-                      }}
-                    />
-                    Consistency Mode
-                  </label>
-                </div>
+              <div className="mt-3 flex items-center justify-start gap-1.5 text-sm md:text-right">
                 <div>
                   <Dialog>
                     <DialogTrigger asChild>
@@ -253,6 +254,22 @@ export default function Home() {
                     </DialogContent>
                   </Dialog>
                 </div>
+                <div>
+                  <label
+                    title="Use earlier images as references"
+                    className="inline-flex cursor-pointer items-center gap-2 rounded border-[0.5px] border-gray-350 bg-gray-500 px-2 py-1.5 shadow shadow-black"
+                  >
+                    <input
+                      type="checkbox"
+                      className="accent-white"
+                      checked={iterativeMode}
+                      onChange={() => {
+                        setIterativeMode(!iterativeMode);
+                      }}
+                    />
+                    Consistency Mode
+                  </label>
+                </div>
               </div>
             </fieldset>
           </form>
@@ -296,6 +313,22 @@ export default function Home() {
                                 className="h-32 w-full rounded object-cover"
                               />
                             </a>
+                            <div className="pointer-events-none absolute inset-0 hidden items-end justify-between bg-gradient-to-t from-black/70 to-transparent p-2 text-left text-xs text-white group-hover:flex">
+                              <div className="pr-6">
+                                <p className="line-clamp-2 font-semibold">
+                                  {lastGen?.prompt || "Untitled"}
+                                </p>
+                                <p className="mt-1 text-[10px] opacity-80">
+                                  {s.generations.length}{" "}
+                                  {s.generations.length === 1
+                                    ? "image"
+                                    : "images"}
+                                  {lastGen?.createdAt
+                                    ? ` • ${timeAgo(lastGen.createdAt)}`
+                                    : ""}
+                                </p>
+                              </div>
+                            </div>
                             <button
                               type="button"
                               onClick={(e) => {
