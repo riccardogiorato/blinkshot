@@ -46,7 +46,8 @@ export default function Home() {
   });
   const [selectedStyleValue, setSelectedStyleValue] = useState("");
   const debouncedPrompt = useDebounce(prompt, 350);
-  const { currentSession, addGeneration } = useUserGenerations();
+  const { currentSession, currentSessionId, addGeneration } =
+    useUserGenerations();
   const generations = currentSession?.generations ?? [];
   let [activeIndex, setActiveIndex] = useState<number>();
 
@@ -83,7 +84,22 @@ export default function Home() {
 
   let isDebouncing = prompt !== debouncedPrompt;
 
+  // Debug: initial mount state
   useEffect(() => {
+    try {
+      console.log("[page] mount", {
+        href: typeof window !== "undefined" ? window.location.href : "",
+        search: typeof window !== "undefined" ? window.location.search : "",
+      });
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    console.log("[page] useEffect(image)", {
+      hasImage: !!image,
+      generations: generations.length,
+      prompt,
+    });
     if (image) {
       const last = generations[generations.length - 1];
       const isDuplicate =
@@ -92,9 +108,30 @@ export default function Home() {
         const newIndex = generations.length;
         addGeneration({ prompt, image }, prompt);
         setActiveIndex(newIndex);
+        console.log("[page] addGeneration + setActiveIndex", newIndex);
       }
     }
   }, [generations.length, image, prompt, addGeneration]);
+
+  // Ensure an image is shown on refresh or when switching sessions
+  useEffect(() => {
+    console.log("[page] session change", {
+      currentSessionId,
+      gens: generations.length,
+      hasSession: !!currentSession,
+    });
+    if (!currentSession) {
+      setActiveIndex(undefined);
+      return;
+    }
+    if (generations.length > 0) {
+      setActiveIndex(generations.length - 1);
+      console.log("[page] setActiveIndex(last)", generations.length - 1);
+    } else {
+      setActiveIndex(undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSessionId, generations.length]);
 
   useEffect(() => {
     if (userAPIKey) {
@@ -210,7 +247,7 @@ export default function Home() {
         </div>
 
         <div className="flex w-full grow flex-col items-center justify-center pb-8 pt-4 text-center">
-          {!activeGeneration || !prompt ? (
+          {!activeGeneration ? (
             <div className="max-w-xl md:max-w-4xl lg:max-w-3xl">
               <p className="text-xl font-semibold text-gray-200 md:text-3xl lg:text-4xl">
                 Generate images in real-time
