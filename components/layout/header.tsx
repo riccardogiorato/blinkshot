@@ -12,7 +12,7 @@ export function Header({ userAPIKey, onAPIKeyChange }: HeaderProps) {
       <div className="absolute left-1/2 top-6 -translate-x-1/2">
         <Logo />
       </div>
-      <div>
+      <div className="hidden md:block">
         <label className="text-xs text-gray-200">
           [Optional] Add your{" "}
           <a
@@ -31,6 +31,7 @@ export function Header({ userAPIKey, onAPIKeyChange }: HeaderProps) {
           onChange={(e) => onAPIKeyChange(e.target.value)}
         />
       </div>
+      <div className="block min-h-[30px] md:hidden" />
     </header>
   );
 }
