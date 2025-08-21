@@ -10,9 +10,7 @@ export function Header({ userAPIKey, onAPIKeyChange }: HeaderProps) {
   return (
     <header className="flex justify-center pt-20 md:justify-end md:pt-3">
       <div className="absolute left-1/2 top-6 -translate-x-1/2">
-        <a href="https://togetherai.link" target="_blank">
-          <Logo />
-        </a>
+        <Logo />
       </div>
       <div>
         <label className="text-xs text-gray-200">
