@@ -13,7 +13,7 @@ export default function Logo() {
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <path d="M1 0V19.5" stroke="#F3F3F3" stroke-width="0.5" />
+        <path d="M1 0V19.5" stroke="#F3F3F3" strokeWidth="0.5" />
       </svg>
       <a href="https://togetherai.link" target="_blank">
         <img src="/together.ai.png" className="h-[23.3px] min-w-[103px]" />
