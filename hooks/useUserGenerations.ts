@@ -29,9 +29,6 @@ const useUserGenerations = () => {
 
   // Load all sessions from localStorage on mount
   useEffect(() => {
-    console.log(
-      "[useUserGenerations] mount: loading sessions from localStorage",
-    );
     const storedSessionIds = localStorage.getItem("userSessions");
     if (!storedSessionIds) return;
 
@@ -48,35 +45,19 @@ const useUserGenerations = () => {
           (session: Session | null): session is Session => session !== null,
         );
       setSessions(restoredSessions);
-      console.log(
-        "[useUserGenerations] restoredSessions",
-        restoredSessions.map((s) => ({
-          id: s.sessionId,
-          gens: s.generations.length,
-        })),
-      );
     } catch {
       // If corrupted, clear to avoid breaking the app
       localStorage.removeItem("userSessions");
-      console.warn("[useUserGenerations] corrupted userSessions - cleared");
     }
   }, []);
 
   // Sync current session id with URL `?session=...`
   useEffect(() => {
-    console.log("[useUserGenerations] url session param", sessionIdFromUrl);
     if (sessionIdFromUrl) {
       setCurrentSessionId(sessionIdFromUrl);
-      console.log(
-        "[useUserGenerations] set currentSessionId from URL",
-        sessionIdFromUrl,
-      );
     } else {
       // No session selected in URL. Keep as null to avoid creating sessions on load
       setCurrentSessionId(null);
-      console.log(
-        "[useUserGenerations] no session in URL; currentSessionId set to null",
-      );
     }
   }, [sessionIdFromUrl]);
 
@@ -94,7 +75,6 @@ const useUserGenerations = () => {
       );
       let nextSessions: Session[];
       if (!existingSession) {
-        console.log("[useUserGenerations] creating new session", sessionId);
         const newSession: Session = { sessionId, generations: [] };
         const updated = mutator(newSession);
         nextSessions = [...previousSessions, updated];
@@ -105,10 +85,6 @@ const useUserGenerations = () => {
           JSON.stringify(updated),
         );
       } else {
-        console.log(
-          "[useUserGenerations] updating existing session",
-          sessionId,
-        );
         const updatedSession = mutator({ ...existingSession });
         nextSessions = previousSessions.map((s) =>
           s.sessionId === sessionId ? updatedSession : s,
@@ -118,11 +94,6 @@ const useUserGenerations = () => {
           JSON.stringify(updatedSession),
         );
       }
-      console.log(
-        "[useUserGenerations] upsert complete",
-        sessionId,
-        nextSessions.find((s) => s.sessionId === sessionId)?.generations.length,
-      );
       return nextSessions;
     });
   };
@@ -130,9 +101,6 @@ const useUserGenerations = () => {
   const ensureSessionId = () => {
     let sessionId = sessionIdFromUrl ?? currentSessionId;
     if (!sessionId) {
-      console.log(
-        "[useUserGenerations] no session present; creating new session id",
-      );
       sessionId = (
         typeof crypto !== "undefined" && crypto.randomUUID
           ? crypto.randomUUID()
@@ -143,26 +111,17 @@ const useUserGenerations = () => {
       params.set("session", sessionId);
       router.replace(`/?${params.toString()}`);
       setCurrentSessionId(sessionId);
-      console.log(
-        "[useUserGenerations] session created and URL updated",
-        sessionId,
-      );
     }
     return sessionId;
   };
 
   // Adds a generation to the current session; creates a session if none in URL
   const addGeneration = (generation: Generation, prompt: string) => {
-    console.log("[useUserGenerations] addGeneration called", {
-      hasImage: !!generation?.image?.b64_json,
-      promptLength: prompt?.length ?? 0,
-    });
     const sessionId = ensureSessionId();
     upsertSession(sessionId, (session) => ({
       ...session,
       generations: [...session.generations, generation],
     }));
-    console.log("[useUserGenerations] generation added to session", sessionId);
   };
 
   const deleteSession = (sessionId: string) => {
