@@ -356,24 +356,27 @@ export default function Home() {
                 </button>
               </div>
 
-              <div className="mt-4 flex flex-row-reverse gap-4 overflow-x-scroll pb-4">
-                {generations.map((generatedImage, i) => (
-                  <button
-                    key={i}
-                    className="w-32 shrink-0 opacity-50 hover:opacity-100"
-                    onClick={() => setActiveIndex(i)}
-                  >
-                    <Image
-                      placeholder="blur"
-                      blurDataURL={imagePlaceholder.blurDataURL}
-                      width={1024}
-                      height={768}
-                      src={`data:image/png;base64,${generatedImage.image.b64_json}`}
-                      alt=""
-                      className="max-w-full rounded-lg object-cover shadow-sm shadow-black"
-                    />
-                  </button>
-                ))}
+              <div className="mt-4 flex flex-row gap-4 overflow-x-scroll pb-4">
+                {[...generations]
+                  .map((gen, idx) => ({ gen, idx }))
+                  .reverse()
+                  .map(({ gen, idx }) => (
+                    <button
+                      key={idx}
+                      className="w-32 shrink-0 opacity-50 hover:opacity-100"
+                      onClick={() => setActiveIndex(idx)}
+                    >
+                      <Image
+                        placeholder="blur"
+                        blurDataURL={imagePlaceholder.blurDataURL}
+                        width={1024}
+                        height={768}
+                        src={`data:image/png;base64,${gen.image.b64_json}`}
+                        alt=""
+                        className="max-w-full rounded-lg object-cover shadow-sm shadow-black"
+                      />
+                    </button>
+                  ))}
               </div>
             </div>
           )}
