@@ -48,8 +48,13 @@ export default function Home() {
   });
   const [selectedStyleValue, setSelectedStyleValue] = useState("");
   const debouncedPrompt = useDebounce(prompt, 350);
-  const { currentSession, currentSessionId, addGeneration } =
-    useUserGenerations();
+  const {
+    sessions,
+    currentSession,
+    currentSessionId,
+    addGeneration,
+    deleteSession,
+  } = useUserGenerations();
   const generations = currentSession?.generations ?? [];
   let [activeIndex, setActiveIndex] = useState<number>();
 
@@ -285,6 +290,66 @@ export default function Home() {
                 Enter a prompt and generate images in milliseconds as you type.
                 Powered by Flux on Together AI.
               </p>
+              {sessions && sessions.length > 0 && (
+                <div className="mt-6">
+                  <p className="mb-2 text-xs uppercase tracking-wide text-gray-350">
+                    Previous sessions
+                  </p>
+                  <div className="grid grid-cols-3 gap-3">
+                    {sessions
+                      .filter((s) => (s.generations?.length ?? 0) > 0)
+                      .map((s) => {
+                        const lastGen = s.generations[s.generations.length - 1];
+                        return (
+                          <div key={s.sessionId} className="group relative">
+                            <a
+                              href={`/?session=${s.sessionId}`}
+                              className="block overflow-hidden rounded-md border border-gray-400/40 hover:border-white"
+                              title={lastGen?.prompt || "Open session"}
+                            >
+                              <Image
+                                placeholder="blur"
+                                blurDataURL={imagePlaceholder.blurDataURL}
+                                width={256}
+                                height={192}
+                                src={`data:image/png;base64,${lastGen.image.b64_json}`}
+                                alt="Session preview"
+                                className="h-32 w-full rounded object-cover"
+                              />
+                            </a>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                deleteSession(s.sessionId);
+                              }}
+                              className="absolute right-2 top-2 inline-flex items-center justify-center rounded bg-black/50 p-1 text-white opacity-0 transition group-hover:opacity-100"
+                              aria-label="Delete session"
+                              title="Delete session"
+                            >
+                              <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M3 6h18M9 6V4h6v2m-8 0h10l-1 14H8L7 6z"
+                                  stroke="currentColor"
+                                  strokeWidth="1.5"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="mt-4 flex w-full max-w-4xl flex-col justify-center">

@@ -165,6 +165,26 @@ const useUserGenerations = () => {
     console.log("[useUserGenerations] generation added to session", sessionId);
   };
 
+  const deleteSession = (sessionId: string) => {
+    setSessions((previousSessions) => {
+      const remainingSessions = previousSessions.filter(
+        (s) => s.sessionId !== sessionId,
+      );
+      const remainingIds = remainingSessions.map((s) => s.sessionId);
+      localStorage.setItem("userSessions", JSON.stringify(remainingIds));
+      localStorage.removeItem(`userSession-${sessionId}`);
+      return remainingSessions;
+    });
+
+    if (currentSessionId === sessionId) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("session");
+      const nextUrl = params.toString() ? `/?${params.toString()}` : "/";
+      router.replace(nextUrl);
+      setCurrentSessionId(null);
+    }
+  };
+
   const currentSession = sessions.find(
     (session) => session.sessionId === currentSessionId,
   );
@@ -174,6 +194,7 @@ const useUserGenerations = () => {
     currentSession,
     currentSessionId,
     addGeneration,
+    deleteSession,
   };
 };
 
