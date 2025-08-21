@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export type Generation = {
   prompt: string;
@@ -18,82 +18,112 @@ type ImageResponse = {
 };
 
 const useUserGenerations = () => {
-  const { session: sessionIdFromUrl } = useParams();
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [currentSessionId, setCurrentSessionId] = useState<string | null>(
-    sessionIdFromUrl ? (sessionIdFromUrl as string) : null,
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const sessionIdFromUrl = useMemo(
+    () => searchParams.get("session"),
+    [searchParams],
   );
 
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+
+  // Load all sessions from localStorage on mount
   useEffect(() => {
     const storedSessionIds = localStorage.getItem("userSessions");
-    if (storedSessionIds) {
-      const sessionIds = JSON.parse(storedSessionIds);
-      const sessions = sessionIds
+    if (!storedSessionIds) return;
+
+    try {
+      const sessionIds = JSON.parse(storedSessionIds) as string[];
+      const restoredSessions: Session[] = sessionIds
         .map((sessionId: string) => {
           const storedSession = localStorage.getItem(
             `userSession-${sessionId}`,
           );
-          return storedSession ? JSON.parse(storedSession) : null;
+          return storedSession ? (JSON.parse(storedSession) as Session) : null;
         })
-        .filter((session: Session | null) => session !== null);
-      setSessions(sessions);
-      if (
-        sessionIdFromUrl &&
-        !sessions.find(
-          (session: Session) => session.sessionId === sessionIdFromUrl,
-        )
-      ) {
-        setCurrentSessionId(sessionIdFromUrl as string);
-      } else if (sessions.length > 0) {
-        setCurrentSessionId(sessions[0].sessionId);
-      }
-    } else if (sessionIdFromUrl) {
-      setCurrentSessionId(sessionIdFromUrl as string);
+        .filter(
+          (session: Session | null): session is Session => session !== null,
+        );
+      setSessions(restoredSessions);
+    } catch {
+      // If corrupted, clear to avoid breaking the app
+      localStorage.removeItem("userSessions");
     }
   }, []);
 
-  const addGeneration = (
+  // Sync current session id with URL `?session=...`
+  useEffect(() => {
+    if (sessionIdFromUrl) {
+      setCurrentSessionId(sessionIdFromUrl);
+    } else {
+      // No session selected in URL. Keep as null to avoid creating sessions on load
+      setCurrentSessionId(null);
+    }
+  }, [sessionIdFromUrl]);
+
+  const persistSessionList = (sessionIds: string[]) => {
+    localStorage.setItem("userSessions", JSON.stringify(sessionIds));
+  };
+
+  const upsertSession = (
     sessionId: string,
-    generation: Generation,
-    prompt: string,
+    mutator: (s: Session) => Session,
   ) => {
-    setSessions((prevSessions) => {
-      let updatedSessions = prevSessions;
-      if (
-        !prevSessions.find(
-          (session: Session) => session.sessionId === sessionId,
-        )
-      ) {
-        const newSession = { sessionId, generations: [], prompts: [] };
-        updatedSessions = [...prevSessions, newSession];
-        localStorage.setItem(
-          "userSessions",
-          JSON.stringify([
-            ...prevSessions.map((session: Session) => session.sessionId),
-            sessionId,
-          ]),
-        );
+    setSessions((previousSessions) => {
+      const existingSession = previousSessions.find(
+        (s) => s.sessionId === sessionId,
+      );
+      let nextSessions: Session[];
+      if (!existingSession) {
+        const newSession: Session = { sessionId, generations: [], prompts: [] };
+        const updated = mutator(newSession);
+        nextSessions = [...previousSessions, updated];
+        const existingIds = previousSessions.map((s) => s.sessionId);
+        persistSessionList([...existingIds, sessionId]);
         localStorage.setItem(
           `userSession-${sessionId}`,
-          JSON.stringify(newSession),
+          JSON.stringify(updated),
         );
-      }
-      const updatedSession = updatedSessions.find(
-        (session: Session) => session.sessionId === sessionId,
-      );
-      if (updatedSession) {
-        updatedSession.generations = [
-          ...updatedSession.generations,
-          generation,
-        ];
-        updatedSession.prompts = [...updatedSession.prompts, prompt];
+      } else {
+        const updatedSession = mutator({ ...existingSession });
+        nextSessions = previousSessions.map((s) =>
+          s.sessionId === sessionId ? updatedSession : s,
+        );
         localStorage.setItem(
           `userSession-${sessionId}`,
           JSON.stringify(updatedSession),
         );
       }
-      return updatedSessions;
+      return nextSessions;
     });
+  };
+
+  const ensureSessionId = () => {
+    let sessionId = sessionIdFromUrl ?? currentSessionId;
+    if (!sessionId) {
+      sessionId = (
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : Math.random().toString(36).slice(2, 10)
+      ) as string;
+      // Update URL without creating a new history entry
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("session", sessionId);
+      router.replace(`/?${params.toString()}`);
+      setCurrentSessionId(sessionId);
+    }
+    return sessionId;
+  };
+
+  // Adds a generation to the current session; creates a session if none in URL
+  const addGeneration = (generation: Generation, prompt: string) => {
+    const sessionId = ensureSessionId();
+    upsertSession(sessionId, (session) => ({
+      ...session,
+      generations: [...session.generations, generation],
+      prompts: [...session.prompts, prompt],
+    }));
   };
 
   const currentSession = sessions.find(
@@ -103,6 +133,7 @@ const useUserGenerations = () => {
   return {
     sessions,
     currentSession,
+    currentSessionId,
     addGeneration,
   };
 };
